@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: Hotelbooking
+
+  data:
+    mongodb:
+      uri: mongodb+srv://chetanrathodkgn:Chetan%40123456@cluster0.kociv.mongodb.net/Hotel_booking?retryWrites=true&w=majority&appName=Cluster0
+      auto-index-creation: true
+
+  security:
+    user:
+      name: admin
+      password: admin
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+  web:
+    resources:
+      static-locations: file:uploads/
+
+server:
+  port: 8080
+
+jwt:
+  secret: fKFgGRdmZTGyGE6twjFNpEgx/X1WJm/N6jwjSweDpFU=
+  expiration: 86400000

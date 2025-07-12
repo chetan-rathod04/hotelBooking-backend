@@ -127,3 +127,6 @@ public class AuthController {
         return ResponseEntity.ok("All bookings for admin");
     }
 }
+
+
+

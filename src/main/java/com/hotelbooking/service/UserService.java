@@ -7,58 +7,67 @@ import com.hotelbooking.exception.ResourceConflictException;
 import com.hotelbooking.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
+	@Autowired
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final String uploadDir = "uploads/avatars";
 
-    public User updateUser(String userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    
+    public User updateUser(String id, UserUpdateRequest request, MultipartFile avatar) throws IOException {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (!userOptional.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + id);
+        }
 
-        // ✅ Unique Username Check
+        User user = userOptional.get();
+
+        // ✅ Check for unique username
         if (StringUtils.hasText(request.getUsername())) {
             userRepository.findByUsername(request.getUsername()).ifPresent(existingUser -> {
-                if (!existingUser.getId().equals(userId)) {
+                if (!existingUser.getId().equals(id)) {
                     throw new ResourceConflictException("Username already exists: " + request.getUsername());
                 }
             });
             user.setUsername(request.getUsername());
         }
 
-        // ✅ Unique Email Check
+        // ✅ Check for unique email
         if (StringUtils.hasText(request.getEmail())) {
             userRepository.findByEmail(request.getEmail()).ifPresent(existingUser -> {
-                if (!existingUser.getId().equals(userId)) {
+                if (!existingUser.getId().equals(id)) {
                     throw new ResourceConflictException("Email already exists: " + request.getEmail());
                 }
             });
             user.setEmail(request.getEmail());
         }
 
-        // ✅ Password update
-        if (StringUtils.hasText(request.getPassword())) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
+        // ✅ Handle avatar upload
+        if (avatar != null && !avatar.isEmpty()) {
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
 
-        // ✅ Role update
-        if (StringUtils.hasText(request.getRole())) {
-            try {
-                user.setRole(UserRole.valueOf(request.getRole().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid role. Allowed values: USER, ADMIN");
-            }
+            String filename = UUID.randomUUID().toString() + "_" + avatar.getOriginalFilename();
+            File dest = new File(dir, filename);
+            avatar.transferTo(dest);
+
+            user.setAvatar("/uploads/avatars/" + filename); // Only store relative path
         }
 
         return userRepository.save(user);

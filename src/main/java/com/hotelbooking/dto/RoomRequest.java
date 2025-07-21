@@ -14,10 +14,10 @@ public class RoomRequest {
 	@NotBlank(message = "RoomType must not be blank")
 	private String type; // e.g., Deluxe, Single
 	@NotBlank(message = "RoomPrice must not be blank")
-	private double price;
+	private double pricePerNight;
 	@NotBlank(message = "Room Available must not be blank")
 	private boolean available;
 	@NotBlank(message = "Room Number must not be blank")
 	private String roomNumber;
-
+	private String image;
 }

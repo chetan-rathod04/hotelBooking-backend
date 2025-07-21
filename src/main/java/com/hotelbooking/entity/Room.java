@@ -18,6 +18,7 @@ public class Room {
     private String roomNumber;
     private String hotelId;
     private String type; // Single, Double, Suite
-    private double price;
+    private double pricePerNight;
     private boolean available;
+    private String image;
 }

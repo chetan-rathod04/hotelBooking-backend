@@ -33,13 +33,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Configuration
 @EnableMethodSecurity // ✅ Enables @PreAuthorize
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SecurityConfig  {
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+    
+    
     
 //    @Bean
 //    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -64,7 +66,12 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/uploads/**",        // ✅ Public access to uploaded images (default-room.jpg, avatars, etc.)
+                    "/rooms/all",         // ✅ Public access to all rooms
+                    "/hotels/**"          // ✅ Public access to hotels page
+                ).permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
@@ -106,11 +113,7 @@ public class SecurityConfig {
         };
     }
 
-    // ✅ Authentication manager bean
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+
     
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -123,8 +126,14 @@ public class SecurityConfig {
                         .allowCredentials(true); // ✅ important for cookies
             }
         };
+        
+        
     }
 
-
+    // ✅ Authentication manager bean
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
  
 }

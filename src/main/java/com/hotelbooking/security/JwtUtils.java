@@ -14,7 +14,7 @@ import com.hotelbooking.exception.TokenExpiredException;
 public class JwtUtils {
 
     private final String secret = "G2yT30nB6gDm6HVs9mS9AwL0QbUcmD1T3mNEaBNKJDoRWE7Fdh4c3qCZg8V5EBLp";
-    private final long expiration = 600000; // 10 minutes
+    private final long expiration = 86400000; // 1 day
 
     private final Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
@@ -22,7 +22,6 @@ public class JwtUtils {
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", "USER") // Optional: set role
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS512)

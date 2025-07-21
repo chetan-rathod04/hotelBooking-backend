@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.hotelbooking.exception.BookingException;
 import com.hotelbooking.exception.ResourceNotFoundException;
+import com.hotelbooking.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.security.core.Authentication;
 
 import com.hotelbooking.dto.BookingRequest;
 import com.hotelbooking.entity.Booking;
+import com.hotelbooking.entity.User;
 import com.hotelbooking.enums.BookingStatus;
 import com.hotelbooking.service.BookingService;
 
@@ -23,19 +26,35 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private UserRepository userRepository;
 
+    // ✅ Utility method for reuse
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+    }
+    
     @PostMapping("/add")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<?> bookRoom(@RequestBody BookingRequest request) {
+    public ResponseEntity<?> bookRoom(@RequestBody BookingRequest request, Authentication authentication) {
         try {
+            String username = authentication.getName();
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BookingException("User not found"));
+
+            request.setUserId(user.getId()); // Inject userId from token
+
             Booking booking = bookingService.createBooking(request);
             return ResponseEntity.ok(booking);
+
         } catch (BookingException ex) {
             return ResponseEntity.badRequest().body("Booking Error: " + ex.getMessage());
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Server Error: " + ex.getMessage());
         }
     }
+
 
 
     @GetMapping("/{userId}")
@@ -49,15 +68,7 @@ public class BookingController {
         }
     }
 
-//    @GetMapping("/allbooking")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<?> getAllBookings() {
-//        try {
-//            return ResponseEntity.ok(bookingService.getAllBookings());
-//        } catch (Exception ex) {
-//            return ResponseEntity.internalServerError().body("Failed to retrieve bookings");
-//        }
-//    }
+
     @GetMapping("/allbooking")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllBookings() {

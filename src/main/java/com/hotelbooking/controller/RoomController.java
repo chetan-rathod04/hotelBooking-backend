@@ -14,6 +14,7 @@ import com.hotelbooking.service.RoomService;
 
 @RestController
 @RequestMapping("/api/rooms")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class RoomController {
 
     @Autowired
@@ -23,6 +24,10 @@ public class RoomController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addRoom(@RequestBody RoomRequest request) {
         try {
+        	 // ✅ Set default image if not provided
+            if (request.getImage() == null || request.getImage().isEmpty()) {
+                request.setImage("default-room.jpg");
+            }
             Room room = roomService.addRoom(request);
             return ResponseEntity.ok(room);
         } catch (RoomException e) {
@@ -64,10 +69,15 @@ public class RoomController {
         }
     }
 
+    // ✅ Update room
     @PutMapping("/roomUpdate/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateRoom(@PathVariable String id, @RequestBody RoomRequest request) {
         try {
+            if (request.getImage() == null || request.getImage().isEmpty()) {
+                request.setImage("default-room.jpg");
+            }
+
             Room updatedRoom = roomService.updateRoom(id, request);
             return ResponseEntity.ok(updatedRoom);
         } catch (RoomException e) {

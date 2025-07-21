@@ -23,7 +23,7 @@ public class RoomService {
         Room room = new Room();
         room.setRoomNumber(request.getRoomNumber());
         room.setType(request.getType());
-        room.setPrice(request.getPrice());
+        room.setPricePerNight(request.getPricePerNight());
         room.setAvailable(request.isAvailable());
         room.setHotelId(request.getHotelId());
 
@@ -33,7 +33,9 @@ public class RoomService {
         return roomRepository.save(room); // roomNumber must be unique
     }
 
-
+    public Room saveRoom(Room room) {
+        return roomRepository.save(room);
+    }
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
     }
@@ -65,7 +67,7 @@ public class RoomService {
 
         Room existingRoom = getRoomById(id);
         existingRoom.setType(request.getType());
-        existingRoom.setPrice(request.getPrice());
+        existingRoom.setPricePerNight(request.getPricePerNight());
         existingRoom.setAvailable(request.isAvailable());
 
         return roomRepository.save(existingRoom);
@@ -97,7 +99,7 @@ public class RoomService {
             throw new RoomException("Room number is required.");
         }
 
-        if (request.getPrice() < 0) {
+        if (request.getPricePerNight() < 0) {
             throw new RoomException("Room price must be a positive value.");
         }
 

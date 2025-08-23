@@ -1,5 +1,6 @@
 package com.hotelbooking.service;
 
+import com.hotelbooking.dto.AdminUpdateUserRequest;
 import com.hotelbooking.dto.UserUpdateRequest;
 import com.hotelbooking.entity.User;
 import com.hotelbooking.enums.UserRole;
@@ -29,7 +30,45 @@ public class UserService {
     private final UserRepository userRepository;
     private final String uploadDir = "uploads/avatars";
 
-    
+  // Update user details by Admin
+public User updateUserByAdmin(String userId, AdminUpdateUserRequest dto) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+    // Check for username conflict and update
+    if (StringUtils.hasText(dto.getUsername()) && !dto.getUsername().equals(user.getUsername())) {
+        userRepository.findByUsername(dto.getUsername()).ifPresent(existing -> {
+            if (!existing.getId().equals(userId)) {
+                throw new ResourceConflictException("Username already exists");
+            }
+        });
+        user.setUsername(dto.getUsername());
+    }
+
+    // Check for email conflict and update
+    if (StringUtils.hasText(dto.getEmail()) && !dto.getEmail().equals(user.getEmail())) {
+        userRepository.findByEmail(dto.getEmail()).ifPresent(existing -> {
+            if (!existing.getId().equals(userId)) {
+                throw new ResourceConflictException("Email already taken");
+            }
+        });
+        user.setEmail(dto.getEmail());
+    }
+
+    // Set role only if changed
+    if (dto.getRole() != null && !dto.getRole().equalsIgnoreCase(user.getRole().name())) {
+        try {
+            user.setRole(UserRole.valueOf(dto.getRole().toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role: " + dto.getRole());
+        }
+    }
+
+    return userRepository.save(user);
+}
+
+
+    //update by user
     public User updateUser(String id, UserUpdateRequest request, MultipartFile avatar) throws IOException {
         Optional<User> userOptional = userRepository.findById(id);
         if (!userOptional.isPresent()) {

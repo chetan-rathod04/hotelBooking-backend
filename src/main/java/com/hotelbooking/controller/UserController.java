@@ -1,23 +1,30 @@
 package com.hotelbooking.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 
+import com.hotelbooking.dto.AdminUpdateUserRequest;
+import com.hotelbooking.dto.RegisterRequest;
 import com.hotelbooking.dto.UserUpdateRequest;
 import com.hotelbooking.entity.User;
 import com.hotelbooking.exception.ResourceNotFoundException;
@@ -25,19 +32,65 @@ import com.hotelbooking.repository.UserRepository;
 import com.hotelbooking.security.JwtUtils;
 import com.hotelbooking.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController  {
 
 	@Autowired
     private  UserService userService;
 	@Autowired
     private final JwtUtils JwtUtils; 
     @Autowired
-    private UserRepository userRepository;
-  
+    private final UserRepository userRepository;
+    @Autowired
+    private final PasswordEncoder passwordEncoder;
+
+    @PostMapping("/admin/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addUserByAdmin(@Valid @RequestBody RegisterRequest request) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Username already exists"));
+        }
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email already exists"));
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "User added successfully"));
+    }
+
+    
+    @PutMapping("/admin/update/{userId}")
+    @PreAuthorize("hasRole('ADMIN')") 
+    public ResponseEntity<?> updateUserByAdmin(
+            @PathVariable String userId,
+            @RequestBody AdminUpdateUserRequest dto) {
+        try {
+            User updatedUser = userService.updateUserByAdmin(userId, dto);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            // ❌ This sends plain text, not JSON
+            // return ResponseEntity.badRequest().body(e.getMessage());
+
+            // ✅ Return error object instead
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUserWithAvatar(
             @PathVariable String id,

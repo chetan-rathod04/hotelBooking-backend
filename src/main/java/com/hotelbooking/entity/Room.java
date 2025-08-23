@@ -19,6 +19,6 @@ public class Room {
     private String hotelId;
     private String type; // Single, Double, Suite
     private double pricePerNight;
-    private boolean available;
+    private boolean available = true;
     private String image;
 }

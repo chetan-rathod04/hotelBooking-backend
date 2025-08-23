@@ -46,9 +46,17 @@ public class HotelService {
 
     // ✅ Get single hotel by ID
     public Hotel getHotelById(String id) {
-        return hotelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID: " + id));
+        try {
+            return hotelRepository.findById(id).orElse(null);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid ObjectId: " + id, e);
+        }
     }
+
+//    public Hotel getHotelById(String id) {
+//        return hotelRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID: " + id));
+//    }
 
     // ✅ Search hotels by location
     public List<Hotel> getHotelsByLocation(String location) {
@@ -83,4 +91,9 @@ public class HotelService {
         }
         hotelRepository.deleteById(id);
     }
+ // HotelService.java
+    public List<Hotel> searchHotels(String keyword) {
+        return hotelRepository.searchByNameOrLocation(keyword);
+    }
+
 }

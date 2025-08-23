@@ -21,6 +21,20 @@ spring:
     resources:
       static-locations: file:uploads/
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: chetanrathodkgn@gmail.com
+    password: cvkb eafe ekko nlyc
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+google:
+  recaptcha:
+    secret: 6LeDnporAAAAAMlw5XUt_y4ET6ITjXq2RuvTUq3_
 
 server:
   port: 8080

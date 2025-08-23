@@ -1,5 +1,10 @@
 package com.hotelbooking.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.hotelbooking.entity.Review;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -15,5 +20,8 @@ public class HotelRequest {
     private boolean available;
 	@NotBlank(message = "Hotel Number must not be blank")
 	private String hotelNumber;
+	private String image;
+    private List<Review> reviews = new ArrayList<>();
+
 
 }

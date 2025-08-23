@@ -5,6 +5,8 @@ import com.hotelbooking.service.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +32,11 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+
 @Configuration
 @EnableMethodSecurity // ✅ Enables @PreAuthorize
 @RequiredArgsConstructor
@@ -41,39 +48,40 @@ public class SecurityConfig  {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
     
-    
-    
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        return http
-////                .csrf().disable()
-//        		 .csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/auth/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .userDetailsService(customUserDetailsService)
-//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-//                .build();
-//    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configure(http))
+            .cors(cors -> {}) // ✅ enable CORS with WebMvcConfigurer
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
+                // ✅ Public endpoints
                 .requestMatchers(
                     "/api/auth/**",
-                    "/uploads/**",        // ✅ Public access to uploaded images (default-room.jpg, avatars, etc.)
-                    "/rooms/all",         // ✅ Public access to all rooms
-                    "/hotels/**"          // ✅ Public access to hotels page
+                    "/api/hotels/all",
+                    "/api/rooms/all",
+                    "/api/rooms/available",
+                    "/api/blogs/all",
+                    "/uploads/**",
+                    "/images/**",
+                    "/api/hotels/search"
                 ).permitAll()
+                // Booking endpoints → require USER role
+                .requestMatchers("/api/bookings/**").hasAnyRole("USER","ADMIN")
+
+                // Admin
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+
+                // User endpoints
+                .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
+
+//                // ✅ Role-based endpoints
+//                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+//                .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
+
+                // ✅ Everything else needs login
                 .anyRequest().authenticated()
             )
             .userDetailsService(customUserDetailsService)
@@ -82,6 +90,7 @@ public class SecurityConfig  {
 
         return http.build();
     }
+    
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -128,6 +137,22 @@ public class SecurityConfig  {
         };
         
         
+    }
+    // ✅ Global CORS config
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowCredentials(true); // ✅ allow cookies
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     // ✅ Authentication manager bean

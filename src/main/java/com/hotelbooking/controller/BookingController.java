@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.hotelbooking.exception.BookingException;
 import com.hotelbooking.exception.ResourceNotFoundException;
+import com.hotelbooking.repository.RoomRepository;
 import com.hotelbooking.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,12 @@ import org.springframework.security.core.Authentication;
 
 import com.hotelbooking.dto.BookingRequest;
 import com.hotelbooking.entity.Booking;
+import com.hotelbooking.entity.Room;
 import com.hotelbooking.entity.User;
 import com.hotelbooking.enums.BookingStatus;
 import com.hotelbooking.service.BookingService;
+
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -28,6 +32,8 @@ public class BookingController {
     private BookingService bookingService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RoomRepository roomRepository;
 
     // ✅ Utility method for reuse
     private boolean isAdmin(Authentication auth) {
@@ -35,16 +41,26 @@ public class BookingController {
                 .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
     }
     
+
     @PostMapping("/add")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<?> bookRoom(@RequestBody BookingRequest request, Authentication authentication) {
+    public ResponseEntity<?> bookRoom(@RequestBody @Valid BookingRequest request, Authentication authentication) {
         try {
+            // ✅ Get logged-in user
             String username = authentication.getName();
             User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BookingException("User not found"));
+                    .orElseThrow(() -> new BookingException("User not found"));
 
-            request.setUserId(user.getId()); // Inject userId from token
+            // ✅ Inject userId from token (ignore any malicious userId)
+            request.setUserId(user.getId());
 
+            // ✅ Validate hotelId from room
+            Room room = roomRepository.findById(request.getRoomId())
+                    .orElseThrow(() -> new BookingException("Room not found"));
+
+            request.setHotelId(room.getHotelId()); // auto fill from DB
+
+            // ✅ Create booking
             Booking booking = bookingService.createBooking(request);
             return ResponseEntity.ok(booking);
 
@@ -54,7 +70,6 @@ public class BookingController {
             return ResponseEntity.status(500).body("Server Error: " + ex.getMessage());
         }
     }
-
 
 
     @GetMapping("/{userId}")

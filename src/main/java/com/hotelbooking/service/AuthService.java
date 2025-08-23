@@ -18,6 +18,12 @@ public class AuthService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    
+    // ✅ Password validation method
+    private boolean isValidPassword(String password) {
+        String regex = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        return password.matches(regex);
+    }
 
     // ✅ User registration with email + username uniqueness check
     public String register(RegisterRequest req) {
@@ -27,6 +33,12 @@ public class AuthService {
 
         if (userRepo.findByEmail(req.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
+        }
+        // 🔐 Validate password strength
+        if (!isValidPassword(req.getPassword())) {
+            throw new RuntimeException(
+                "Password must be at least 8 characters long, include a letter, a number, and a special character."
+            );
         }
 
         User user = new User();

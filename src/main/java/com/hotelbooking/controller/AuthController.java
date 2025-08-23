@@ -39,9 +39,20 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+//    @PostMapping("/register")
+//    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest req) {
+//        return ResponseEntity.ok(authService.register(req));
+//    }
+    // ✅ Registration endpoint (validation happens in AuthService)
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest req) {
-        return ResponseEntity.ok(authService.register(req));
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
+        try {
+            String response = authService.register(req);
+            return ResponseEntity.ok(Map.of("message", response));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/login")

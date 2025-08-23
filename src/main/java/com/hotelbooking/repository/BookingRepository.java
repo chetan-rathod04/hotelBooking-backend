@@ -22,5 +22,10 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
  // BookingRepository.java
     @Query("{ 'roomId': ?0, 'status': { $ne: 'CANCELLED' }, $or: [ { 'fromDate': { $lte: ?2 }, 'toDate': { $gte: ?1 } } ] }")
     List<Booking> findByRoomIdAndDateOverlap(String roomId, LocalDate fromDate, LocalDate toDate);
+    
+    @Query("{ 'hotelId': ?0, " +
+            "'checkInDate': { $lt: ?2 }, " +   // booking starts before requested checkout
+            "'checkOutDate': { $gt: ?1 } }")  // booking ends after requested check-in
+    List<Booking> findByHotelIdAndDateRange(String hotelId, LocalDate checkIn, LocalDate checkOut);
 
 }

@@ -79,15 +79,6 @@ public class HotelController {
         }
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Hotel> getHotelById(@PathVariable String id) {
-//        Hotel hotel = hotelService.getHotelById(id);
-//        if (hotel == null) {
-//            throw new ResourceNotFoundException("Hotel with ID " + id + " not found.");
-//        }
-//        return ResponseEntity.ok(hotel);
-//    }
-
     // ✅ Search by location
     @GetMapping("/location/search")
     public ResponseEntity<List<Hotel>> searchByLocation(@RequestParam String location) {

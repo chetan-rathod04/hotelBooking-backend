@@ -1,44 +1,45 @@
 spring:
   application:
-    name: Hotelbooking
+    name: Hotelbooking   # ✅ App name
 
   data:
     mongodb:
-      uri: mongodb+srv://chetanrathodkgn:Chetan%40123456@cluster0.kociv.mongodb.net/Hotel_booking?retryWrites=true&w=majority&appName=Cluster0
+      uri: ${MONGO_URI}   # ✅ Your MongoDB connection string
       auto-index-creation: true
 
   security:
     user:
-      name: admin
-      password: admin
+      name: ${SPRING_SECURITY_USER}     # ✅ Admin username (from env var)
+      password: ${SPRING_SECURITY_PASSWORD} # ✅ Admin password (from env var)
 
   servlet:
     multipart:
-      max-file-size: 5MB
+      max-file-size: 5MB      # ✅ Upload file limit
       max-request-size: 5MB
 
   web:
     resources:
-      static-locations: file:uploads/
+      static-locations: file:uploads/  # ✅ Serve uploaded images/files
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: chetanrathodkgn@gmail.com
-    password: cvkb eafe ekko nlyc
+    username: ${MAIL_USERNAME}     # ✅ Gmail/SMTP user (from env var)
+    password: ${MAIL_PASSWORD}     # ✅ Gmail/SMTP app password (from env var)
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
 google:
   recaptcha:
-    secret: 6LeDnporAAAAAMlw5XUt_y4ET6ITjXq2RuvTUq3_
+    secret: ${GOOGLE_RECAPTCHA_SECRET}   # ✅ Recaptcha secret (from env var)
 
 server:
-  port: 8080
+  port: ${PORT:8080}   # ✅ Use provided port (needed for Render/Railway)
 
 jwt:
-  secret: fKFgGRdmZTGyGE6twjFNpEgx/X1WJm/N6jwjSweDpFU=
-  expiration: 86400000
+  secret: ${JWT_SECRET}            # ✅ JWT secret (from env var)
+  expiration: ${JWT_EXPIRATION:86400000} # ✅ 1 day default

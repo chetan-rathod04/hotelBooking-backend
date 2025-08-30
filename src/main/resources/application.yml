@@ -4,28 +4,28 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGO_URI}   # ✅ Your MongoDB connection string
+      uri: ${MONGO_URI:mongodb+srv://chetanrathodkgn:Chetan%40123456@cluster0.kociv.mongodb.net/Hotel_booking?retryWrites=true&w=majority&appName=Cluster0} # ✅ MongoDB URI (Atlas से env var, local fallback भी)
       auto-index-creation: true
 
   security:
     user:
-      name: ${SPRING_SECURITY_USER:admin}     # ✅ Admin username (from env var)
-      password: ${SPRING_SECURITY_PASSWORD:admin123} # ✅ Admin password (from env var)
+      name: ${SPRING_SECURITY_USER:admin}          # ✅ Default admin user
+      password: ${SPRING_SECURITY_PASSWORD:admin123} # ✅ Default admin password
 
   servlet:
     multipart:
-      max-file-size: 5MB      # ✅ Upload file limit
+      max-file-size: 5MB
       max-request-size: 5MB
 
   web:
     resources:
-      static-locations: file:uploads/  # ✅ Serve uploaded images/files
+      static-locations: file:uploads/   # ✅ Serve uploaded images/files from "uploads" folder
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}     # ✅ Gmail/SMTP user (from env var)
-    password: ${MAIL_PASSWORD}     # ✅ Gmail/SMTP app password (from env var)
+    username: ${MAIL_USERNAME:chetanrathodkgn@gmail.com}   # ✅ Default Gmail
+    password: ${MAIL_PASSWORD:cvkb eafe ekko nlyc}            # ✅ App password (env var preferred)
     properties:
       mail:
         smtp:
@@ -35,11 +35,11 @@ spring:
 
 google:
   recaptcha:
-    secret: ${GOOGLE_RECAPTCHA_SECRET}   # ✅ Recaptcha secret (from env var)
+    secret: ${GOOGLE_RECAPTCHA_SECRET:6LeDnporAAAAAMlw5XUt_y4ET6ITjXq2RuvTUq3_} # ✅ Default Recaptcha secret
 
 server:
-  port: ${PORT:8080}   # ✅ Use provided port (needed for Render/Railway)
+  port: ${PORT:8080}   # ✅ Render/Railway deploy के लिए dynamic, local पर 8080
 
 jwt:
-  secret: ${JWT_SECRET}            # ✅ JWT secret (from env var)
-  expiration: ${JWT_EXPIRATION:86400000} # ✅ 1 day default
+  secret: ${JWT_SECRET:fKFgGRdmZTGyGE6twjFNpEgx/X1WJm/N6jwjSweDpFU=}  # ✅ JWT secret (default = तुम्हारा पुराना secret)
+  expiration: ${JWT_EXPIRATION:86400000}      # ✅ 1 day default

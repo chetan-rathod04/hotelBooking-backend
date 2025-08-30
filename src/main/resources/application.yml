@@ -9,8 +9,8 @@ spring:
 
   security:
     user:
-      name: ${SPRING_SECURITY_USER}     # ✅ Admin username (from env var)
-      password: ${SPRING_SECURITY_PASSWORD} # ✅ Admin password (from env var)
+      name: ${SPRING_SECURITY_USER:admin}     # ✅ Admin username (from env var)
+      password: ${SPRING_SECURITY_PASSWORD:admin123} # ✅ Admin password (from env var)
 
   servlet:
     multipart:

@@ -59,6 +59,8 @@ public class SecurityConfig  {
             .authorizeHttpRequests(auth -> auth
                 // ✅ Public endpoints
                 .requestMatchers(
+                	"/",                // <--- allow root URL
+                    "/healthz",   
                     "/api/auth/**",
                     "/api/hotels/all",
                     "/api/rooms/all",

@@ -1,5 +1,29 @@
-target
+# target
+# .git
+# .gitignore
+# Dockerfile
+# README.md
+
+# Ignore target build directory (JAR will be built in container)
+target/
+
+# Ignore local config
+*.env
+*.properties
+
+# Ignore Git files
 .git
 .gitignore
-Dockerfile
-README.md
+
+# Ignore IDE settings
+.idea/
+.vscode/
+*.iml
+
+# Ignore OS specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+logs/

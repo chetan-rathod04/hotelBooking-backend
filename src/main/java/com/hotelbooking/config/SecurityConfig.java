@@ -123,37 +123,69 @@ public class SecurityConfig  {
     }
 
 
-    
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // or 3000, depending on Vite/React
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowCredentials(true); // ✅ important for cookies
+                        .allowedOrigins(
+                            "http://localhost:5173",         // ✅ local dev
+                            "https://hotelbooking-frontend.netlify.app" // ✅ Netlify live site
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
-        
-        
     }
+    
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("http://localhost:5173") // or 3000, depending on Vite/React
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                        .allowCredentials(true); // ✅ important for cookies
+//            }
+//        };
+//        
+//        
+//    }
     // ✅ Global CORS config
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:5173",
+            "https://hotelbooking-frontend.netlify.app"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowCredentials(true); // ✅ allow cookies
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        
         configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+        configuration.setAllowCredentials(true);
 
-        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+//        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowCredentials(true); // ✅ allow cookies
+//        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+//        
+//        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+//
+//        
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
     // ✅ Authentication manager bean
     @Bean
